@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Inmobiliaria Malinalco</title>
+  <meta name="description" content="Encuentra terrenos, casas y departamentos en Malinalco, Estado de México. Explora propiedades en un mapa interactivo." />
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <!-- Material Icons -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ═══════════════════════ HEADER ═══════════════════════ -->
+  <header id="main-header">
+    <div class="header-brand">
+      <span class="material-icons brand-icon">location_city</span>
+      <span class="brand-name">Inmobiliaria <strong>Malinalco</strong></span>
+    </div>
+
+    <nav class="header-filters">
+      <button class="filter-btn active" data-type="all">
+        <span class="material-icons">layers</span> Todos
+      </button>
+      <button class="filter-btn" data-type="Terreno">
+        <span class="material-icons">view_quilt</span> Terrenos
+      </button>
+      <button class="filter-btn" data-type="Casa">
+        <span class="material-icons">home</span> Casas
+      </button>
+      <button class="filter-btn" data-type="Departamento">
+        <span class="material-icons">apartment</span> Deptos
+      </button>
+      <button class="filter-btn filter-btn-search" id="custom-search-btn">
+        <span class="material-icons">manage_search</span> Búsqueda personalizada
+      </button>
+    </nav>
+
+    <div class="header-actions">
+      <button class="icon-btn" id="open-filter-btn" title="Filtros avanzados">
+        <span class="material-icons">tune</span>
+        <span class="filter-badge hidden" id="filter-badge">!</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ═══════════════════════ MAP ═══════════════════════ -->
+  <div id="map"></div>
+
+  <!-- Loading overlay (visible mientras se hace fetch a Sheets) -->
+  <div id="map-loader" class="map-loader hidden">
+    <div class="loader-box">
+      <div class="loader-spinner"></div>
+      <span>Cargando propiedades…</span>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════ FILTER DRAWER ═══════════════════════ -->
+  <div id="filter-overlay" class="overlay hidden"></div>
+  <aside id="filter-drawer" class="hidden">
+    <div class="drawer-header">
+      <h2><span class="material-icons">tune</span> Filtros avanzados</h2>
+      <button class="icon-btn" id="close-filter-btn">
+        <span class="material-icons">close</span>
+      </button>
+    </div>
+
+    <div class="drawer-body">
+
+      <!-- Tipo de propiedad -->
+      <div class="filter-group">
+        <label class="filter-label">
+          <span class="material-icons">category</span> Tipo de propiedad
+        </label>
+        <div class="chip-group" id="f-tipo">
+          <button class="chip active" data-val="all">Todos</button>
+          <button class="chip" data-val="Terreno">
+            <span class="material-icons" style="font-size:14px;vertical-align:middle">view_quilt</span> Terreno
+          </button>
+          <button class="chip" data-val="Casa">
+            <span class="material-icons" style="font-size:14px;vertical-align:middle">home</span> Casa
+          </button>
+          <button class="chip" data-val="Departamento">
+            <span class="material-icons" style="font-size:14px;vertical-align:middle">apartment</span> Depto
+          </button>
+        </div>
+      </div>
+
+      <!-- Price Range -->
+      <div class="filter-group">
+        <label class="filter-label">
+          <span class="material-icons">attach_money</span> Rango de Precio (MXN)
+        </label>
+        <div class="range-inputs">
+          <div class="range-field">
+            <span>Mínimo</span>
+            <input type="number" id="f-price-min" placeholder="0" min="0" step="100000" />
+          </div>
+          <div class="range-sep">—</div>
+          <div class="range-field">
+            <span>Máximo</span>
+            <input type="number" id="f-price-max" placeholder="Sin límite" min="0" step="100000" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Area -->
+      <div class="filter-group">
+        <label class="filter-label">
+          <span class="material-icons">square_foot</span> Superficie (m²)
+        </label>
+        <div class="range-inputs">
+          <div class="range-field">
+            <span>Mínimo</span>
+            <input type="number" id="f-area-min" placeholder="0" min="0" />
+          </div>
+          <div class="range-sep">—</div>
+          <div class="range-field">
+            <span>Máximo</span>
+            <input type="number" id="f-area-max" placeholder="Sin límite" min="0" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Bedrooms -->
+      <div class="filter-group">
+        <label class="filter-label">
+          <span class="material-icons">bed</span> Recámaras mínimas
+        </label>
+        <div class="chip-group" id="f-bedrooms">
+          <button class="chip active" data-val="0">Cualquiera</button>
+          <button class="chip" data-val="1">1+</button>
+          <button class="chip" data-val="2">2+</button>
+          <button class="chip" data-val="3">3+</button>
+          <button class="chip" data-val="4">4+</button>
+        </div>
+      </div>
+
+      <!-- Bathrooms -->
+      <div class="filter-group">
+        <label class="filter-label">
+          <span class="material-icons">bathtub</span> Baños mínimos
+        </label>
+        <div class="chip-group" id="f-bathrooms">
+          <button class="chip active" data-val="0">Cualquiera</button>
+          <button class="chip" data-val="1">1+</button>
+          <button class="chip" data-val="2">2+</button>
+          <button class="chip" data-val="3">3+</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="drawer-footer">
+      <button id="clear-filters-btn" class="btn-outline">
+        <span class="material-icons">refresh</span> Limpiar
+      </button>
+      <button id="apply-filters-btn" class="btn-primary">
+        <span class="material-icons">search</span> Aplicar filtros
+      </button>
+    </div>
+  </aside>
+
+  <!-- ═══════════════════════ PROPERTY MODAL ═══════════════════════ -->
+  <div id="prop-modal" class="prop-modal hidden">
+    <div class="prop-modal-inner">
+
+      <!-- Close -->
+      <button class="modal-close" id="modal-close-btn">
+        <span class="material-icons">close</span>
+      </button>
+
+      <!-- Image Slider -->
+      <div class="slider-wrap">
+        <div class="slider-track" id="slider-track"></div>
+        <button class="slider-arrow left" id="slider-prev">
+          <span class="material-icons">chevron_left</span>
+        </button>
+        <button class="slider-arrow right" id="slider-next">
+          <span class="material-icons">chevron_right</span>
+        </button>
+        <div class="slider-dots" id="slider-dots"></div>
+      </div>
+
+      <!-- Content -->
+      <div class="modal-content">
+
+        <!-- Left: Details -->
+        <div class="modal-details">
+          <div class="modal-tags" id="modal-tags"></div>
+          <h1 class="modal-title" id="modal-title"></h1>
+          <p class="modal-price" id="modal-price"></p>
+
+          <div class="spec-grid" id="spec-grid"></div>
+
+          <div class="normativa-box hidden" id="normativa-box">
+            <span class="material-icons">gavel</span>
+            <div>
+              <strong>Normativa</strong>
+              <p id="normativa-text"></p>
+            </div>
+          </div>
+
+          <a class="btn-whatsapp" id="whatsapp-btn" href="#" target="_blank" rel="noopener">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+              <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.45 3.46 1.32 4.95L2 22l5.25-1.38c1.44.79 3.07 1.2 4.79 1.2 5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2zm5.52 14.17c-.24.67-1.39 1.28-1.93 1.35-.48.07-1.09.1-1.76-.11-.41-.12-.93-.29-1.59-.57-2.8-1.21-4.63-4.04-4.77-4.23-.13-.19-1.09-1.45-1.09-2.76 0-1.31.69-1.95.93-2.22.24-.27.52-.34.69-.34l.5.01c.16 0 .38-.06.59.45l.76 1.97c.07.16.11.34.01.54l-.27.55-.4.41c-.14.14-.29.28-.12.56.17.27.74 1.22 1.58 1.97 1.09.97 2 1.27 2.28 1.41.27.14.43.12.59-.07l.81-.96c.17-.21.33-.14.55-.08l1.94.91c.18.09.29.13.33.2.04.07.04.43-.2 1.1z"/>
+            </svg>
+            Contactar por WhatsApp
+          </a>
+        </div>
+
+        <!-- Right: Similar -->
+        <div class="modal-similar">
+          <h3 class="similar-title">
+            <span class="material-icons">grid_view</span> Propiedades Similares
+          </h3>
+          <div class="similar-grid" id="similar-grid"></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Results counter -->
+  <div id="results-pill">
+    <span class="material-icons">place</span>
+    <span id="results-count">0</span> propiedades
+  </div>
+
+  <!-- ═══════════════════════ LIGHTBOX MODAL ═══════════════════════ -->
+  <div id="lightbox-modal" class="lightbox-modal hidden">
+    <button class="lightbox-close" id="lightbox-close-btn">
+      <span class="material-icons">close</span>
+    </button>
+    <button class="lightbox-arrow left" id="lightbox-prev">
+      <span class="material-icons">chevron_left</span>
+    </button>
+    <img id="lightbox-img" src="" alt="Fullscreen view" />
+    <button class="lightbox-arrow right" id="lightbox-next">
+      <span class="material-icons">chevron_right</span>
+    </button>
+    <div id="lightbox-counter" class="lightbox-counter"></div>
+  </div>
+
+  <!-- Floating WhatsApp Button -->
+  <a id="whatsapp-float" href="https://wa.me/5521916202?text=Hola%2C%20me%20gustar%C3%ADa%20obtener%20informaci%C3%B3n%20sobre%20las%20propiedades%20disponibles%20en%20Malinalco." target="_blank" rel="noopener" title="Contáctanos por WhatsApp">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.45 3.46 1.32 4.95L2 22l5.25-1.38c1.44.79 3.07 1.2 4.79 1.2 5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2zm5.52 14.17c-.24.67-1.39 1.28-1.93 1.35-.48.07-1.09.1-1.76-.11-.41-.12-.93-.29-1.59-.57-2.8-1.21-4.63-4.04-4.77-4.23-.13-.19-1.09-1.45-1.09-2.76 0-1.31.69-1.95.93-2.22.24-.27.52-.34.69-.34l.5.01c.16 0 .38-.06.59.45l.76 1.97c.07.16.11.34.01.54l-.27.55-.4.41c-.14.14-.29.28-.12.56.17.27.74 1.22 1.58 1.97 1.09.97 2 1.27 2.28 1.41.27.14.43.12.59-.07l.81-.96c.17-.21.33-.14.55-.08l1.94.91c.18.09.29.13.33.2.04.07.04.43-.2 1.1z"/>
+    </svg>
+    <span class="wa-label">WhatsApp</span>
+  </a>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- Main Script -->
+  <script src="script.js"></script>
+</body>
+</html>
