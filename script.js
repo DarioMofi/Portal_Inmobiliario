@@ -311,24 +311,28 @@ function updateFilterBadge() {
 }
 
 /* ─── 8. HEADER QUICK FILTERS ─── */
+function resetNumericAndChipFilters() {
+  activeFilters.priceMin  = null;
+  activeFilters.priceMax  = null;
+  activeFilters.areaMin   = null;
+  activeFilters.areaMax   = null;
+  activeFilters.bedrooms  = 0;
+  activeFilters.bathrooms = 0;
+  
+  document.getElementById('f-price-min').value = '';
+  document.getElementById('f-price-max').value = '';
+  document.getElementById('f-area-min').value  = '';
+  document.getElementById('f-area-max').value  = '';
+  
+  document.querySelectorAll('#f-bedrooms .chip, #f-bathrooms .chip').forEach(c => {
+    c.classList.toggle('active', c.dataset.val === '0');
+  });
+}
+
 document.querySelectorAll('.filter-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     // 1. Limpiar filtros numéricos y campos del drawer
-    activeFilters.priceMin  = null;
-    activeFilters.priceMax  = null;
-    activeFilters.areaMin   = null;
-    activeFilters.areaMax   = null;
-    activeFilters.bedrooms  = 0;
-    activeFilters.bathrooms = 0;
-    
-    document.getElementById('f-price-min').value = '';
-    document.getElementById('f-price-max').value = '';
-    document.getElementById('f-area-min').value  = '';
-    document.getElementById('f-area-max').value  = '';
-    
-    document.querySelectorAll('#f-bedrooms .chip, #f-bathrooms .chip').forEach(c => {
-      c.classList.toggle('active', c.dataset.val === '0');
-    });
+    resetNumericAndChipFilters();
 
     // 2. Aplicar el tipo seleccionado
     document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -419,19 +423,7 @@ document.getElementById('apply-filters-btn').addEventListener('click', () => {
 
 
 document.getElementById('clear-filters-btn').addEventListener('click', () => {
-  activeFilters.priceMin  = null;
-  activeFilters.priceMax  = null;
-  activeFilters.areaMin   = null;
-  activeFilters.areaMax   = null;
-  activeFilters.bedrooms  = 0;
-  activeFilters.bathrooms = 0;
-  document.getElementById('f-price-min').value = '';
-  document.getElementById('f-price-max').value = '';
-  document.getElementById('f-area-min').value  = '';
-  document.getElementById('f-area-max').value  = '';
-  document.querySelectorAll('#f-bedrooms .chip, #f-bathrooms .chip').forEach(c => {
-    c.classList.toggle('active', c.dataset.val === '0');
-  });
+  resetNumericAndChipFilters();
   refreshMap();
 });
 

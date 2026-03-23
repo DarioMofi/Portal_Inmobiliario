@@ -79,6 +79,12 @@ html, body {
   align-items: center;
   gap: 6px;
   flex: 1;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.header-filters::-webkit-scrollbar {
+  display: none;
 }
 
 .filter-btn {
@@ -695,7 +701,7 @@ html, body {
 /* ──────────────────── RESULTS PILL ──────────────────── */
 #results-pill {
   position: fixed;
-  bottom: 24px;
+  bottom: 56px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 800;
@@ -862,6 +868,33 @@ html, body {
 /* ──────────────────── UTILITIES ──────────────────── */
 .hidden { display: none !important; }
 
+/* ──────────────────── FOOTER ──────────────────── */
+.app-footer {
+  position: fixed;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 800;
+  font-size: 12px;
+  color: var(--neutral-500);
+  background: var(--white);
+  border: 1px solid var(--neutral-200);
+  box-shadow: var(--shadow-sm);
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.app-footer a {
+  color: #000;
+  font-weight: 600;
+  text-decoration: none;
+  transition: var(--transition);
+}
+.app-footer a:hover {
+  color: var(--accent);
+}
 
 /* ──────────────────── SCROLLBAR ──────────────────── */
 ::-webkit-scrollbar { width: 5px; }
@@ -877,9 +910,15 @@ html, body {
 
   .prop-modal-inner { width: 98vw; max-height: 97vh; }
   .slider-wrap { height: 220px; }
-  .modal-content { flex-direction: column; }
-  .modal-similar { width: 100%; border-left: none; border-top: 1px solid var(--neutral-200); }
-  .modal-details { padding: 20px 18px; }
+  .modal-content { flex-direction: column; overflow-y: auto; overflow-x: hidden; }
+  .modal-similar { position: relative; width: 100%; height: auto; border-left: none; border-top: 1px solid var(--neutral-200); overflow-y: visible; }
+  .modal-details { max-width: 100%; padding: 20px 18px; overflow-y: visible; }
 
   #filter-drawer { width: 100%; }
+
+  .app-footer {
+    bottom: 8px;
+    font-size: 11px;
+    padding: 5px 12px;
+  }
 }
